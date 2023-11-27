@@ -1,3 +1,3 @@
-# Sound Powered Car
+# Remote control
 
-Imagine some really cool documentation here...
+![preview](./assets/preview.png)

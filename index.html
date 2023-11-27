@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- HTML Meta Tags -->
+  <title>Controle Remoto - Simulador | SD-DCA0119</title>
+  <meta name="description" content="Ambiente para simulação do controle remoto desenvolvido como projeto de estudo de unidade da disciplina de Sistemas Digitais (DCA0119) no semestre de 2023.2.">
+
+  <!-- Google / Search Engine Tags -->
+  <meta itemprop="name" content="GitHub: Let’s build from here">
+  <meta itemprop="description" content="Ambiente para simulação do controle remoto desenvolvido como projeto de estudo de unidade da disciplina de Sistemas Digitais (DCA0119) no semestre de 2023.2.">
+  <meta itemprop="image" content="./assets/preview.png">
+
+  <!-- Facebook Meta Tags -->
+  <meta property="og:url" content="https://github.com">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="GitHub: Let’s build from here">
+  <meta property="og:description" content="Ambiente para simulação do controle remoto desenvolvido como projeto de estudo de unidade da disciplina de Sistemas Digitais (DCA0119) no semestre de 2023.2.">
+  <meta property="og:image" content="./assets/preview.png">
+
+  <!-- Twitter Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="GitHub: Let’s build from here">
+  <meta name="twitter:description" content="Ambiente para simulação do controle remoto desenvolvido como projeto de estudo de unidade da disciplina de Sistemas Digitais (DCA0119) no semestre de 2023.2.">
+  <meta name="twitter:image" content="./assets/preview.png">
+
+  <link rel="shortcut icon" href="./assets/car-r.png" type="image/png">
+
+  <link rel="stylesheet" href="./assets/style.css">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/gh/ArjunVarshney/jsontohtml-render@latest/dist/index.js"></script>
+</head>
+
+<body class="bg-zinc-200">
+  <section class="text-gray-600 body-font">
+    <div class="container mx-auto flex flex-col px-5 pt-12 justify-center items-center">
+      <div class="w-full md:w-2/3 flex flex-col mb-16 items-center text-center">
+        <h1 class="title-font sm:text-4xl text-3xl mb-4 font-medium text-gray-900">Controle Remoto - Simulador</h1>
+        <p class="mb-8 leading-relaxed">
+          Ambiente para simulação do controle remoto desenvolvido como projeto de estudo de unidade da disciplina de Sistemas Digitais (DCA0119) no semestre de 2023.2.
+        </p>
+        <div class="flex gap-2">
+          <canvas id="board" width="720" height="360"></canvas>
+          <div class="flex flex-col">
+            <div class="relative -mt-4 mr-4 w-full text-left">
+              <label for="api-data-input" class="leading-7 text-sm text-gray-600">Ultima instrução - API</label>
+              <input type="checkbox" id="api-data-checkbox" name="api-data-checkbox" class="absolute cursor-pointer right-0 top-2">
+              <input type="text" id="api-data-input" disabled name="api-data-input"
+                class="w-full bg-gray-100 bg-opacity-50 rounded focus:ring-2 focus:ring-indigo-200 focus:bg-transparent border border-gray-300 focus:border-indigo-500 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
+            </div>
+            <div id="api-last-data" class="text-start -mx-4 font-sm"></div>
+          </div>
+        </div>
+        <p class="mb-2 leading-relaxed mt-4 opacity-50 fixed left-1/2 bottom-0 -translate-x-1/2">
+          Desenvolvido com ♥ por <span id="author" class="transition-all"> Ernane Ferreira </span>
+        </p>
+      </div>
+    </div>
+  </section>
+  <img src="./assets/car-d.png" id="car-d" alt="car" class="fixed hidden bottom-0 left-0 w-1/2 z-0">
+  <img src="./assets/car-l.png" id="car-l" alt="car" class="fixed hidden bottom-0 left-0 w-1/2 z-0">
+  <img src="./assets/car-r.png" id="car-r" alt="car" class="fixed hidden bottom-0 left-0 w-1/2 z-0">
+  <img src="./assets/car-u.png" id="car-u" alt="car" class="fixed hidden bottom-0 left-0 w-1/2 z-0">
+
+  <script src="./assets/script.js"></script>
+  <script>
+    const authorTag = document.getElementById('author');
+    const authors = [
+      'Quelita Míriam',
+      'Thiago Lopes',
+      'Ernane Ferreira',
+    ]
+
+    let counter = 0;
+    setInterval(() => {
+      authorTag.style.opacity = 0;
+      setTimeout(() => {
+        authorTag.innerHTML = authors[counter % authors.length];
+        authorTag.style.opacity = 1;
+      }, 300);
+      counter++;
+    }, 3000);
+  </script>
+</body>
+
+</html>
