@@ -1,12 +1,8 @@
-let car, gameArea, lastInstruction = 'R', enableAPI = false;
-const url = 'https://io.adafruit.com/api/v2/Ernane/feeds/welcome-feed/data?limit=1';
+let car, gameArea, lastInstruction = '50x50', enableAPI = false;
+const url = 'https://io.adafruit.com/api/v2/Ernane/feeds/remote/data?limit=2';
 const apiKey = 'aio_yHzy72HnofKRjHlLQxaP3PfW4oax';
-const imageCars = {
-  "R": document.getElementById("car-r"),
-  "L": document.getElementById("car-l"),
-  "U": document.getElementById("car-u"),
-  "D": document.getElementById("car-d"), 
-}
+
+const SPEED_INCREMENT = 0.1;
 
 document.addEventListener('DOMContentLoaded', function () {
   initializeElements();
@@ -33,37 +29,25 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   document.addEventListener('keydown', function (e) {
+    car.speedingUp = true;
     switch (e.key) {
       case "ArrowLeft":
-        lastInstruction = "L";
         car.moveLeft();
         break;
       case "ArrowUp":
-        lastInstruction = "U";
         car.moveUp();
         break;
       case "ArrowRight":
-        lastInstruction = "R";
         car.moveRight();
         break;
       case "ArrowDown":
-        lastInstruction = "D";
         car.moveDown();
         break;
     }
   });
 
   document.addEventListener('keyup', function (e) {
-    switch (e.key) {
-      case "ArrowRight":
-      case "ArrowLeft":
-        car.stopWidth();
-        break;
-      case "ArrowUp":
-      case "ArrowDown":
-        car.stopHeight();
-        break;
-    }
+    car.speedingUp = false;
   });
 
   captureAPIData();
@@ -72,6 +56,7 @@ document.addEventListener('DOMContentLoaded', function () {
 function initializeElements() {
   gameArea = {
     canvas: document.getElementById("board"),
+    angle: 0,
     start: function () {
       this.context = this.canvas.getContext("2d");
       this.interval = setInterval(updateGameArea, 20);
@@ -90,17 +75,27 @@ function component(width, height, color, x, y) {
   this.height = height;
   this.speedX = 0;
   this.speedY = 0;
+  this.speedingUp = false;
   this.x = x;
   this.y = y;
   this.update = function () {
+    gameArea.clear();
+
     ctx = gameArea.context;
+
+    ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+    ctx.rotate(gameArea.angle);
+    ctx.translate(-(this.x + this.width / 2), -(this.y + this.height / 2));
+
     ctx.fillStyle = color;
+
     gameArea.context.drawImage(
-      imageCars[lastInstruction], 
-      this.x, this.y, 
-      ['L', 'R'].includes(lastInstruction) ? this.width : this.height,
-      ['L', 'R'].includes(lastInstruction) ? this.height : this.width
+      document.getElementById("car-r"), 
+      this.x, this.y,
+      this.width, this.height
     );
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
   }
   this.newPos = function () {
     if (this.x < 0) {
@@ -117,41 +112,52 @@ function component(width, height, color, x, y) {
     }
   }
   this.moveUp = function () {
-    this.speedY = -2;
+    this.speedY -= SPEED_INCREMENT;
+    gameArea.angle = Math.atan2(this.speedY, this.speedX);
   }
   this.moveDown = function () {
-    this.speedY = 2;
+    this.speedY += SPEED_INCREMENT;
+    gameArea.angle = Math.atan2(this.speedY, this.speedX);
   }
   this.moveLeft = function () {
-    this.speedX = -2;
+    this.speedX -= SPEED_INCREMENT;
+    gameArea.angle = Math.atan2(this.speedY, this.speedX);
   }
   this.moveRight = function () {
-    this.speedX = 2;
+    this.speedX += SPEED_INCREMENT;
+    gameArea.angle = Math.atan2(this.speedY, this.speedX);
   }
   this.stopWidth = function () {
-    this.speedX = 0;
+    if(this.speedX < 0){
+      this.speedX += SPEED_INCREMENT;
+    }else if(this.speedX > 0){
+      this.speedX -= SPEED_INCREMENT;
+    }
   }
   this.stopHeight = function () {
-    this.speedY = 0;
+    if(this.speedY < 0){
+      this.speedY += SPEED_INCREMENT;
+    }else if(this.speedY > 0){
+      this.speedY -= SPEED_INCREMENT;
+    }
   }
 }
 
 function updateGameArea() {
   byAPI();
 
-  gameArea.clear();
   car.newPos();
   car.update();
+
+  if(!car.speedingUp){
+    car.stopHeight();
+    car.stopWidth();
+  }
 }
 
 function captureAPIData() {
-  const sampleData = 3000;
-  const instructions = {
-    "L": "Left",
-    "U": "Up",
-    "R": "Right",
-    "D": "Down",
-  }
+  const sampleData = 1000;
+
   setInterval(() => {
     if(!enableAPI) return;
     const input = document.getElementById('api-data-input');
@@ -163,10 +169,16 @@ function captureAPIData() {
     })
       .then(response => response.json())
       .then(data => {
-        const translate = ['_', 'L', 'U', 'R', 'D'];
-        lastInstruction = translate[parseInt(data[0].value)];
-        input.value = instructions[lastInstruction] || "Error..";
-        lastData.innerHTML = jsontohtml(data[0]);
+        lastData.innerHTML = jsontohtml({
+          "last-instruction": lastInstruction,
+          "new-informations": {
+            "x": data[1].value,
+            "y": data[0].value
+          },
+          created_at: data[0].created_at
+        });
+        lastInstruction = `${data[1].value}x${data[0].value}`;
+        input.value = `X: ${data[1].value} | Y: ${data[0].value}`;
       })
       .catch(error => {
         console.error('Erro:', error);
@@ -178,21 +190,27 @@ function captureAPIData() {
 function byAPI() {
   if(!enableAPI) return;
 
-  car.stopHeight();
-  car.stopWidth();
+  car.speedingUp = true;
+  
+  let [x, y] = lastInstruction.split('x');
+  x = parseInt(x);
+  y = parseInt(y);
 
-  switch (lastInstruction) {
-    case "L":
-      car.moveLeft();
-      break;
-    case "U":
-      car.moveUp();
-      break;
-    case "R":
-      car.moveRight();
-      break;
-    case "D":
-      car.moveDown();
-      break;
+  console.log("x:",x,"y:", y)
+
+  if(x >= 0 && x < 45){
+    car.moveLeft();
+  }else if(x >= 45 && x <= 50){
+    car.stopWidth();
+  }else if(x > 50){
+    car.moveRight();
+  }
+
+  if(y >= 0 && y < 45){
+    car.moveDown();
+  }else if(y >= 45 && y <= 50){
+    car.stopHeight();
+  }else if(y > 50){
+    car.moveUp();
   }
 }
